@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>test webrtc signaling server</title>
+</head>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/0.3.16/peer.min.js"></script>
+
+<!-- 
+<script type="text/javascript" src="/peer.js"></script>
+ -->
+<body>
+	<div class="console"></div>
+	
+	<div class="form">
+		<div>
+			<input class="my-nickname" 
+				placeholder="Your nickname..."/>
+			<button onclick="init()">Go</button>
+		</div>
+
+		<div>
+			<input class="peer-nickname" 
+				placeholder="Enter the peer nickname yout want to connect to..."/>
+			<button onclick="connectToPeer()">Connect</button>
+		</div>
+
+		<div>
+			<input class="message-to-send" 
+				placeholder="Message to send to peer"/>
+			<button onclick="sendMessageToPeer()">Send message</button>
+		</div>
+	</div>
+
+	<style type="text/css">
+		.console {
+			background: black;
+			color: white;
+			padding: 10px;
+			min-height: 200px;
+		}
+		.console > div {
+			padding: 3px;
+		}
+		.form > div {
+			padding: 10px 0;
+		}
+		.form input, 
+		.form button {
+			font-size: 20px;
+			padding: 10px;
+		}
+	</style>
+	<script type="text/javascript">
+		const consoleElement = document.querySelector('.console')
+		function log() {
+			const params = arguments
+			document.querySelector('.console').appendChild(
+				(() => {
+					const line = document.createElement('div')
+					line.innerHTML = JSON.stringify(arguments)
+					return line
+				})()
+			)
+		}
+
+		// console.log = log
+
+		let nickname
+		let peer = null
+		let conn = null
+
+		const init = () => {
+			if (peer) {
+				peer.destroy()
+				peer = null
+				conn = null
+			}
+
+			nickname = document.querySelector('.my-nickname').value
+
+			log('asking for nickname :' + nickname)
+
+			if (location.href.includes('localhost')) {
+				peer = new Peer(nickname, { 
+					host: 'localhost', 
+					port: 5001, 
+					path: '/peerjs',
+					debug: 3,
+					config: { 
+						//'iceServers': [{ 'url': 'stun:stun.l.google.com:19302' }]
+					}
+				})
+			} else {
+				peer = new Peer(nickname, { 
+					host: 'peerjs-server.vvg.ovh', 
+					port: 443, 
+					path: '/peerjs',
+					debug: 3,
+					config: { 
+						//'iceServers': [{ 'url': 'stun:stun.l.google.com:19302' }]
+					}
+				})
+			}
+
+			peer.on('open', function(id) {
+				log('My peer ID is: ' + id);
+			})
+
+			peer.on('connection', function(createdConn) {
+				conn = createdConn
+				onConnCreated()
+			})
+		}
+
+		const onConnCreated = () => {
+			conn.on('open', function() {
+				conn.send('Hello i am ' + nickname)
+
+				conn.on('data', function(data) {
+				    log('Received', data)
+				    if (data.latency) {
+				    	log(new Date().getTime() - data.latency)
+				    }
+				})
+			})
+		}
+
+		const connectToPeer = () => {
+			const peerNickname = document.querySelector('.peer-nickname').value
+			conn = peer.connect(peerNickname)
+			onConnCreated()
+		}
+
+		const sendMessageToPeer = () => {
+			if (!conn) {
+				alert('No existing connection !')
+				return
+			}
+			conn.send(document.querySelector('.message-to-send').value)
+		}
+
+	</script>
+</body>
+</html>

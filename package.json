@@ -1,0 +1,17 @@
+{
+  "name": "peerjs-server-express-example",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "engines": {
+    "node": ">=10"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "peer": "^0.2.10"
+  }
+}
