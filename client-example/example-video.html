@@ -10,7 +10,11 @@
 <script type="text/javascript" src="/peer.js"></script>
  -->
 <body>
-	<div class="console"></div>
+	<div class="console" style="width: 40vw;display: inline-block;"></div>
+	<div style="width: 40vw;display: inline-block;">
+		<video controls muted class="other" height="200"></video>
+		<video controls muted class="me" height="200"></video>
+	</div>
 	
 	<div class="form">
 		<div>
@@ -111,6 +115,24 @@
 				conn = createdConn
 				onConnCreated()
 			})
+
+			peer.on('call', function(call) {
+			navigator.mediaDevices
+				.getUserMedia({video: true, audio: true})
+				.then(function(stream) {
+			    call.answer(stream); // Answer the call with an A/V stream.
+			    call.on('stream', function(remoteStream) {
+
+				  	const remoteVideo = document.querySelector('video.other')
+					if ('srcObject' in remoteVideo) {
+					  remoteVideo.srcObject = stream
+					} else {
+					  remoteVideo.src = window.URL.createObjectURL(stream) // for older browsers
+					  remoteVideo.play()
+					}
+			    });
+			  })
+			});
 		}
 
 		const onConnCreated = () => {
@@ -130,6 +152,24 @@
 			const peerNickname = document.querySelector('.peer-nickname').value
 			conn = peer.connect(peerNickname)
 			onConnCreated()
+
+
+			navigator.mediaDevices
+				.getUserMedia({video: true, audio: true})
+				.then(function(stream) {
+			  var call = peer.call(peerNickname, stream);
+			  call.on('stream', function(remoteStream) {
+
+			  	const remoteVideo = document.querySelector('video.other')
+				if ('srcObject' in remoteVideo) {
+				  remoteVideo.srcObject = stream
+				} else {
+				  remoteVideo.src = window.URL.createObjectURL(stream) // for older browsers
+				}
+				remoteVideo.play()
+			  });
+			})
+
 		}
 
 		const sendMessageToPeer = () => {

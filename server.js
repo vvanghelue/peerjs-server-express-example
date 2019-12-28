@@ -7,6 +7,10 @@ app.get('/', function(req, res, next) {
 	// res.send('Hello world!') 
 	res.sendFile(path.resolve(__dirname + '/client-example/example.html'))
 })
+app.get('/video', function(req, res, next) {
+	// res.send('Hello world!') 
+	res.sendFile(path.resolve(__dirname + '/client-example/example-video.html'))
+})
 
 /*
 
